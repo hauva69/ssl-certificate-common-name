@@ -103,5 +103,8 @@ ENV/
 # The example data file
 hostnames.txt
 
+# The example output file
+commonnames.txt
+
 # Editors
 *~
