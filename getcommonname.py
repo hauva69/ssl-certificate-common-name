@@ -21,8 +21,11 @@ def is_port_open(host, port):
     ip = None
     try:
         ip = socket.gethostbyname(host)
-    except socket.gaierror:
+    except socket.gaierror as ex:
+        logging.error('IP not found for host {0}: {1}'.format(host, ex))
         return False
+    except UnicodeError as ex:
+        logging.error('Check the certificate manually for host {0}: {1}'.format(host, ex))
     result = sock.connect_ex((ip, port))
     if result == 0:
         return True
@@ -31,16 +34,18 @@ def is_port_open(host, port):
 
 def main():
     for line in sys.stdin:
-        line = line.strip()
-        logging.debug(line)
-        if is_port_open(line, 443):
-            cmd = "/bin/echo | /usr/bin/openssl s_client -showcerts -connect {0}:443 2>/dev/null | /usr/local/bin/awk '/kauppalehti\.fi/ && /CN=/'".format(line)
+        host = line.strip()
+        logging.debug(host)
+        if is_port_open(host, 443):
+            print('host={0}'.format(host))
+            cmd = "/bin/echo | /usr/bin/openssl s_client -showcerts -connect {0}:443 2>&1 | /usr/local/bin/awk '/kauppalehti\.fi/ && /CN=/'".format(host)
+            logging.debug('host={0}'.format(host))
             logging.debug(cmd)
-            print(line, ': ',)
+            print('host={0}'.format(host))
             rc = os.system(cmd)
             if rc != 0:
-                logging.debug('openssl exited with value {0} for hostname {1}'.format(rc, line))
-                sys.exit(42)
+                logging.debug('openssl exited with value {0} for hostname {1}'.format(rc, host))
+                sys.exit(rc)
 
 if __name__ == '__main__':
     main()
