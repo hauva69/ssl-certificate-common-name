@@ -28,7 +28,12 @@ def is_port_open(host, port):
         logging.error('Check the certificate manually for host {0}: {1}'.format(host, ex))
     except TypeError as ex:
         logging.error('Check the certificarte manully for host {0}: {1}'.format(host, ex))
-    result = sock.connect_ex((ip, port))
+    result = None
+    try:
+        result = sock.connect_ex((ip, port))
+    except TypeError as ex:
+        logging.error('Check the certificarte manully for host {0}: {1}'.format(host, ex))
+
     if result == 0:
         return True
     else:
